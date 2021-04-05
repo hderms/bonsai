@@ -6,6 +6,8 @@ use tokio::net::TcpStream;
 
 use crate::util::crlf;
 
+use async_trait::async_trait;
+
 #[derive(Clone, Copy)]
 #[allow(dead_code)]
 enum Status {
@@ -90,12 +92,14 @@ impl Response {
     }
 }
 
+#[async_trait]
 pub trait Server {
-    fn process(&self, request: String) -> Response;
+    async fn process(&self, request: String) -> Response;
 }
 pub struct DefaultServer;
+#[async_trait]
 impl Server for DefaultServer {
-    fn process(&self, _request: String) -> Response {
+     async fn process(&self, _request: String) -> Response {
         Response {
             response_header: ResponseHeader {
                 status: Status::Success,

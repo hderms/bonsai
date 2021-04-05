@@ -13,7 +13,7 @@ async fn main() -> tokio::io::Result<()> {
             let server = gemini::DefaultServer;
             let request_string = gemini::get_request_url(&mut socket).await?;
 
-            let response = server.process(request_string.clone());
+            let response = server.process(request_string.clone()).await;
             socket.write_all(&response.to_bytes()).await
         });
     }
