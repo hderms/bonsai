@@ -1,8 +1,13 @@
-use std::error::Error;
+use tokio::io::AsyncBufReadExt;
+
+use tokio::io::BufReader;
+
+use tokio::net::TcpStream;
 
 use crate::util::crlf;
 
 #[derive(Clone, Copy)]
+#[allow(dead_code)]
 enum Status {
     Input,
     SensitiveInput,
@@ -68,7 +73,7 @@ impl Response {
             vec.push(char as u8);
         }
         if !self.response_header.meta.is_empty() {
-            vec.push(' ' as u8);
+            vec.push(b' ');
         }
 
         for char in self.response_header.meta.chars() {
@@ -84,7 +89,7 @@ pub trait Server {
 }
 pub struct DefaultServer;
 impl Server for DefaultServer {
-    fn process(&self, request: String) -> Response {
+    fn process(&self, _request: String) -> Response {
         let response = Response {
             response_header: ResponseHeader {
                 status: Status::Success,
@@ -104,8 +109,13 @@ pub fn default_error() -> Response {
             status: Status::TemporaryFailure,
             meta: String::from("Server Error"),
         },
-        response_body: ResponseBody {
-            body: None,
-        },
+        response_body: ResponseBody { body: None },
     }
+}
+
+pub async fn get_request_url(socket: &mut TcpStream) -> tokio::io::Result<String> {
+    let mut reader = BufReader::new(socket);
+    let mut line = String::new();
+    reader.read_line(&mut line).await.unwrap();
+    Ok(line)
 }
