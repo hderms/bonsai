@@ -80,6 +80,12 @@ impl Response {
             vec.push(char as u8);
         }
         crlf(&mut vec);
+        if let Some(body) = &self.response_body.body {
+            for char in body.chars() {
+                vec.push(char as u8);
+            }
+            crlf(&mut vec);
+        }
         vec
     }
 }
@@ -90,7 +96,7 @@ pub trait Server {
 pub struct DefaultServer;
 impl Server for DefaultServer {
     fn process(&self, _request: String) -> Response {
-        let response = Response {
+        Response {
             response_header: ResponseHeader {
                 status: Status::Success,
                 meta: String::from("this is a success"),
@@ -98,8 +104,7 @@ impl Server for DefaultServer {
             response_body: ResponseBody {
                 body: Some(String::from("ok")),
             },
-        };
-        response
+        }
     }
 }
 
